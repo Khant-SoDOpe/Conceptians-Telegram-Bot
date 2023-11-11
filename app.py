@@ -6,7 +6,6 @@ from keep_alive import keep_alive
 import os
 
 keep_alive()
-
 bot = TeleBot(os.environ["TELEGRAM_API"])
 
 # Connect to Redis
@@ -16,7 +15,6 @@ redis_client = redis.Redis(host=os.environ['REDIS_HOST'],
 
 chat_id = {}
 log_key = 0
-
 
 def add(id, category):
   # Load the existing data from Redis
@@ -61,7 +59,7 @@ def send_welcome(message):
 
 @bot.message_handler(func=lambda message: message.text == 'Library')
 def Library(message):
-  url = f"https://admin.conceptians.org/api/bot/category"
+  url = f"https://v1.conceptians.org/bot"
   headers = {"Authorization": os.environ["ROUTE_API"]}
   response = requests.get(url, headers=headers)
   data = response.json()
@@ -83,7 +81,8 @@ def books(message):
   keyboard = types.ReplyKeyboardMarkup(row_width=2, one_time_keyboard=True)
   button = types.KeyboardButton("Library")
   keyboard.add(button)
-  url = f"https://admin.conceptians.org/api/bot/category/{message.text}"
+  url = f"https://v1.conceptians.org/bot/{message.text}"
+  print(message.text)
   headers = {"Authorization": os.environ["ROUTE_API"]}
   response = requests.get(url, headers=headers)
   json_data = response.json()
@@ -108,30 +107,30 @@ def download_books(message):
 
   for user in users_data:
     if user["id"] == message.chat.id:
-        url = f"https://admin.conceptians.org/api/bot/category/{user['category']}"
-        headers = {"Authorization": os.environ["ROUTE_API"]}
-        response = requests.get(url, headers=headers)
-        json_data = response.json()
-        for book in json_data:
-          if book['title'] == message.text:
-            title = f"<b>{book['title']}</b>"
-            cat = f"<i>Category: {book['category']}</i>"
-            filesize = f"<i>File size: {book['filesize']}mb</i>"
-            download = book['link']
-            button = types.InlineKeyboardButton(text='Download', url=download)
-            # Create a keyboard with the button
-            keyboard = types.InlineKeyboardMarkup([[button]])
-            try:
-              photo_url = book['image']
-              bot.send_photo(chat_id=message.chat.id, photo=photo_url)
-            except:
-              print('no photo')
-            bot.send_message(message.chat.id,
-                             f"{title}\n{cat}\n{filesize}",
-                             parse_mode='HTML',
-                             reply_markup=keyboard)
+      url = f"https://v1.conceptians.org/bot/{user['category']}"
+      headers = {"Authorization": os.environ["ROUTE_API"]}
+      response = requests.get(url, headers=headers)
+      json_data = response.json()
+      for book in json_data:
+        if book['title'] == message.text:
+          title = f"<b>{book['title']}</b>"
+          cat = f"<i>Category: {book['category']}</i>"
+          filesize = f"<i>File size: {book['filesize']}mb</i>"
+          download = book['link']
+          button = types.InlineKeyboardButton(text='Download', url=download)
+          # Create a keyboard with the button
+          keyboard = types.InlineKeyboardMarkup([[button]])
+          try:
+            photo_url = book['image']
+            bot.send_photo(chat_id=message.chat.id, photo=photo_url)
+          except:
+            print('no photo')
+          bot.send_message(message.chat.id,
+                           f"{title}\n{cat}\n{filesize}",
+                           parse_mode='HTML',
+                           reply_markup=keyboard)
 
-            return  # Exit the function after finding the book
+          return  # Exit the function after finding the book
 
   # If no book is found for the user ID, you can handle it here
   bot.send_message(message.chat.id, "No book found for the user ID.")
@@ -141,16 +140,16 @@ def download_books(message):
 def Social_Media_Links(message):
   keyboard = types.InlineKeyboardMarkup()
   button1 = types.InlineKeyboardButton(
-    text='Facebook',
-    url='https://www.facebook.com/profile.php?id=100082812927163')
+      text='Facebook',
+      url='https://www.facebook.com/profile.php?id=100082812927163')
   button2 = types.InlineKeyboardButton(
-    text='Youtube', url='https://www.youtube.com/@conceptians8961/featured')
+      text='Youtube', url='https://www.youtube.com/@conceptians8961/featured')
   button3 = types.InlineKeyboardButton(
-    text='Instagram', url='https://www.instagram.com/conceptians_org')
+      text='Instagram', url='https://www.instagram.com/conceptians_org')
   button4 = types.InlineKeyboardButton(
-    text='Linkedin', url='https://www.linkedin.com/company/conceptians/')
+      text='Linkedin', url='https://www.linkedin.com/company/conceptians/')
   button5 = types.InlineKeyboardButton(
-    text='Tiktok', url='https://www.tiktok.com/@conceptians')
+      text='Tiktok', url='https://www.tiktok.com/@conceptians')
   keyboard.add(button1, button2)
   keyboard.add(button3, button4)
   keyboard.add(button5)
@@ -159,6 +158,5 @@ def Social_Media_Links(message):
   bot.send_message(message.chat.id,
                    "Click the button to open the link:",
                    reply_markup=keyboard)
-
 
 bot.polling()

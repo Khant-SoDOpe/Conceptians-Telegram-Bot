@@ -129,7 +129,7 @@ def download_books(message):
                 json_data = response.json()
 
                 for book in json_data:
-                    if book['title'] == message.text:
+                    if book['title'].replace(" ", "") == message.text.replace(" ", ""):
                         title = f"<b>{book['title']}</b>"
                         cat = f"<i>Category: {book['category']}</i>"
                         filesize = f"<i>File size: {book['filesize']}mb</i>"

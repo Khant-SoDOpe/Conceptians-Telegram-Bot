@@ -1,16 +1,18 @@
 import json
+import os
 import requests
 import redis
 from telebot import types, TeleBot
 
 # Initialize your Telegram bot
-bot = TeleBot(os.environ["TELEGRAM_API"])
+bot = TeleBot(os.environ.get("TELEGRAM_BOT_TOKEN"))
 
 # Connect to Redis
-redis_client = redis.Redis(host=os.environ['REDIS_HOST'],
-                           port=os.environ['REDIS_PORT'],
-                           password=os.environ['REDIS_PASSWORD'])
-
+redis_client = redis.Redis(
+    host=os.environ.get("REDIS_HOST"),
+    port=os.environ.get("REDIS_PORT"),
+    password=os.environ.get("REDIS_PASSWORD")
+)
 
 # Global variables
 chat_id = {}
@@ -59,7 +61,7 @@ def send_welcome(message):
 @bot.message_handler(func=lambda message: message.text == 'Library')
 def library(message):
     url = "https://v1.conceptians.org/bot"
-    headers = {"Authorization": os.environ["ROUTE_API"]}
+    headers = {"Authorization": f"Bearer {os.environ.get('CONCEPTIANS_API_KEY')}"}
 
     try:
         response = requests.get(url, headers=headers)
@@ -92,7 +94,7 @@ def books(message):
     url = f"https://v1.conceptians.org/bot/{message.text}"
 
     try:
-        response = requests.get(url, headers={"Authorization": os.environ["ROUTE_API"]})
+        response = requests.get(url, headers={"Authorization": f"Bearer {os.environ.get('CONCEPTIANS_API_KEY')}"})
         response.raise_for_status()
         json_data = response.json()
 
@@ -123,7 +125,7 @@ def download_books(message):
             url = f"https://v1.conceptians.org/bot/{user['category']}"
 
             try:
-                response = requests.get(url, headers={"Authorization":  os.environ["ROUTE_API"]})
+                response = requests.get(url, headers={"Authorization": f"Bearer {os.environ.get('CONCEPTIANS_API_KEY')}"})
                 response.raise_for_status()
                 json_data = response.json()
 
